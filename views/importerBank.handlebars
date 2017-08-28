@@ -1,0 +1,205 @@
+<section id="exporter-info">
+	<h4 align="center">New Contract</h4>
+	<form class="form-horizontal" name="lcForm" action="/createLc">
+		<div class="form-group">
+			<label class="control-label col-sm-3">Shipment Id</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" id="shipmentId"
+					name="shipmentId" value="900">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">Content Description</label>
+			<div class="col-sm-8">
+				<textarea class="form-control" type="text" id="contentDesc"
+					name="contentDesc">80,000 bags of 100KG Nescafe sunrise coffee</textarea>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">Content Value (USD)</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" id="contentValue"
+					name="contentValue" value="100,000">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">Exporter Company</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" id="exporterCompany"
+					name="exporterCompany" value="Nescafe Coffees India">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">Exporter Bank</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" id="exporterBank"
+					name="exporterBank" value="State Bank of India">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">Importer Company</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" id="importerCompany"
+					name="importerCompany" value="Walmart Inc">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">Importer Bank</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" id="importerBank"
+					name="importerBank" value="WellsFargo Bank">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">Freight Company</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" id="freightCompany"
+					name="freightCompany" value="Maersk">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">Port Of Loading</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" id="portOfLoading"
+					name="portOfLoading" value="Chennai">
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="control-label col-sm-3">Port Of Entry</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" id="portOfEntry"
+					name="portOfEntry" value="Port of NewYork">
+			</div>
+		</div>
+		<div class="text-center">
+			<div class="btn-group">
+				<button type="submit" class="btn btn-primary">Create</button>
+			</div>
+		</div>
+	</form>
+</section>
+<section id="documents-info">
+	<h4 align="center">Documents</h4>
+	<form name="documentsForm">
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<th>FileName</th>
+					<th>Upload</th>
+					<th>View File</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Letter of Credit</td>
+					<td>Upload
+						<input type="file" required accept="image/*" id="letterOfCredit" data-url="/fileUpload" name="loc">
+						<div id="fileUploadsLC"></div>
+					</td>
+					<td><button type="button" class="btn btn-warning" id="loadLC">View</button></td>
+				</tr>
+				<tr>
+					<td>Bill of Lading</td>
+					<td>Upload
+						<input type="file" required accept="image/*" id="billOfLading" data-url="/fileUpload" name="bol">
+						<div id="fileUploadsBL"></div>
+					</td>
+
+					<td><button type="button" class="btn btn-warning" id="loadBL">View</button></td>
+				</tr>
+				<tr>
+					<td>Insurance</td>
+					<td>Upload
+						<input type="file" required accept="image/*" id="insurance" data-url="/fileUpload" name="ins">
+						<div id="fileUploadsIns"></div>
+					</td>
+					<td><button type="button" class="btn btn-warning" id="loadIns">View</button></td>
+				</tr>
+			</tbody>
+		</table>
+	</form>
+	<div id="statusPanel" style="display:table">
+		<div id="descriptionRow" style="display:table-row">
+			<div style="display: table-cell; font-weight:bold; font-size:1.1em" class="center">Letter of Credit Approved</div>
+			<div style="display: table-cell;" class="center">
+				<i class="fa fa-arrow-right"></i>
+			</div>
+			<div style="display: table-cell; font-weight:bold; font-size:1.1em" class="center">Exporter Documents	Uploaded</div>
+			<div style="display: table-cell;" class="center">
+				<i class="fa fa-arrow-right"></i>
+			</div>
+			<div style="display: table-cell;  font-weight:bold; font-size:1.1em" class="center">Customs Approved</div>
+			<div style="display: table-cell;" class="center">
+				<i class="fa fa-arrow-right"></i>
+			</div>
+			<div style="display: table-cell;  font-weight:bold; font-size:1.1em" class="center">Payment Complete</div>
+		</div>
+		<div id="statusRow" style="display:table-row">
+			<div style="display: table-cell;" class="center">
+				<i class="fa fa-check fa-2x" style="display:none"></i>
+				<i class="fa fa-close fa-2x" style="display:inline"></i>
+			</div>
+			<div style="display: table-cell"></div>
+			<div style="display: table-cell;" class="center">
+				<i class="fa fa-check fa-2x" style="display:none"></i>
+				<i class="fa fa-close fa-2x" style="display:inline"></i>
+			</div>
+			<div style="display: table-cell"></div>
+			<div style="display: table-cell;" class="center">
+				<i class="fa fa-check fa-2x" style="display:none"></i>
+				<i class="fa fa-close fa-2x" style="display:inline"></i>
+			</div>
+			<div style="display: table-cell"></div>
+			<div style="display: table-cell;" class="center">
+				<i class="fa fa-check fa-2x" style="display:none"></i>
+				<i class="fa fa-close fa-2x" style="display:inline"></i>
+			</div>
+		</div>
+	</div>
+</section>
+{{#section 'jquery'}}
+<script src="/js/vendor/jquery.ui.widget.js"></script>
+<script src="/js/vendor/jquery.iframe-transport.js"></script>
+<script src="/js/vendor/jquery.fileupload.js"></script>
+<script src="/js/vendor/jquery.colorbox.js"></script>
+<script>        
+	$(document).ready(function() {            
+		$("form[name='lcForm']").on('submit', function(evt) 
+		{
+			evt.preventDefault();
+			var action = $(this).attr('action');
+			var contentValue = $("input[name='contentValue']").val();
+			var obj = {
+				type : 'createLC',
+				lc : {
+					shipmentId : $("input[name='shipmentId']").val(),
+					contentDesc : $("textarea[name='contentDesc']").val(),
+					contentValue : parseFloat(contentValue.replace(',', '')),
+					exporterCompany : $("input[name='exporterCompany']").val(),
+					exporterBank : $("input[name='exporterBank']").val(),
+					importerCompany : $("input[name='exporterBank']").val(),
+					importerBank : $("input[name='importerBank']").val(),
+					freightCompany : $("input[name='freightCompany']").val(),
+					portOfLoading : $("input[name='portOfLoading']").val(),
+					portOfEntry : $("input[name='portOfEntry']").val()
+				}
+			};
+			console.log('creating LC, sending', obj);
+            ws.send(JSON.stringify(obj));
+		});
+		$('#letterOfCredit').fileupload({
+			dataType: 'json',
+			done: function(e, data) {
+				$.each(data.result.files, function(index, file){
+					$('#fileUploads').append($('<div class="upload">' + 
+							'<span class="glyphicon glyphicon-ok"></span>' +
+							'&nbsp;' + file.originalName + '</div>'));
+				});
+			}
+		});
+		$("#loadFile").on("click", function() {
+    		 $.colorbox({href:"/getDocument?file=billoflading.png"});
+  		});
+	});    
+</script>
+{{/section}}
