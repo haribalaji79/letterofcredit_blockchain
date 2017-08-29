@@ -146,31 +146,25 @@ CPChaincode.prototype.uploadDocument = function(enrollID, shipmentId, fileName, 
     });
 };
 
-
-/**
- * Query the chaincode for the full list of commercial papers.
- * @param enrollID The user that the query should be submitted through.
- * @param cb A callback of the form: function(error, commercial_papers)
- */
-CPChaincode.prototype.getPapers = function(enrollID, cb) {
-    console.log(TAG, 'getting commercial papers');
+CPChaincode.prototype.getAllLCs = function(enrollID, cb) {
+    console.log(TAG, 'getting LCs');
 
     // Accounts will be named after the enrolled users
-    var getPapersRequest = {
+    var getAllLCReqs = {
         chaincodeID: this.chaincodeID,
-        fcn: 'GetAllCPs',
-        args: [enrollID]
+        fcn: 'getAllLCs',
+        args: []
     };
 
-    query(this.chain, enrollID, getPapersRequest, function(err, papers) {
+    query(this.chain, enrollID, getAllLCReqs, function(err, lcs) {
 
         if(err) {
-            console.error(TAG, 'failed to getPapers:', err);
+            console.error(TAG, 'failed to getLCs:', err);
             return cb(err);
         }
 
-        console.log(TAG, 'got papers');
-        cb(null, papers.toString());
+        console.log(TAG, 'got LCs');
+        cb(null, lcs.toString());
     });
 };
 

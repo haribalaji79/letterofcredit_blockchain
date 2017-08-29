@@ -251,6 +251,12 @@ chain_setup.setupChain(keyValStoreDir, users, peerURLs, peerEventHosts, caURL, c
             console.log(TAG, 'Chain setup failed:', error);
             throw error;
         }
+        
+        /*if (chaincodeID.indexOf('ae963') > -1 || chaincodeID.indexOf('c64e48') > -1) {
+        	chain.eventHubConnect(peerEventHosts[0],{pem:certificate});
+        } else {
+        	chain.eventHubConnect(peerEventHosts[1],{pem:certificate});
+        }*/
 
         // Setup anyone who needs the chain object or the chaincode
         user_manager = user_manager(chain, useTLS);

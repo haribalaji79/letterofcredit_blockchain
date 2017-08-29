@@ -1,0 +1,30 @@
+<h4 align="center" class="mt15">Letter of Credit Applications</h4>
+<table class="table table-striped mt15">
+	<thead>
+		<th>Shipment Id</th>
+		<th>Content Description</th>
+		<th>Content Value</th>
+		<th>Exporter</th>
+		<th>Importer</th>
+		<th>Freight Company</th>
+		<th>Status</th>
+		<th>View</th>
+	</thead>
+	<tbody>
+		{{#each lcApplications}}
+			<tr>
+				<td>{{shipmentId}}</td>
+				<td>{{contentDesc}}</td>
+				<td>{{contentValue}}</td>
+				<td>{{exporterCompany}}</td>
+				<td>{{importerCompany}}</td>
+				<td>{{freightCompany}}</td>
+				<td>{{currentStatus}}</td>
+				<td><a href="/{{../username}}?shipmentId={{shipmentId}}">
+					<i class="fa fa-list-alt" aria-hidden="true"></i>
+					</a>
+				</td>
+			</tr>
+		{{/each}}
+	</tbody>
+</table>

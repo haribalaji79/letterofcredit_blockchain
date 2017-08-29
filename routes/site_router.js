@@ -39,6 +39,8 @@ router.get('/:page', function (req, res) {
 	} else if (req.params.page == 'logout') {
 		req.session.destroy();
 	    res.redirect('/login');
+	} else if (req.params.page == 'lcList') {
+		retrieveLCApplications(req, res);
 	}
 	else {
 		res.render(req.params.page, {role : req.session.role, date : formatDate(new Date())});
@@ -203,12 +205,25 @@ function login(req, res) {
         	req.session.role = userJSON.role;
         	req.session.username = userJSON.userName;
         	req.session.shipmentId = '900';
-            return res.redirect('/' + req.body.username + '');
+        	retrieveLCApplications(req, res);
             //req.session.username = req.body.username;
             //req.session.name = req.body.username;
             //req.session.error_msg = null;
         }
     });
+}
+
+function retrieveLCApplications(req, res) {
+	chaincode_ops.getAllLCs('WebAppAdmin', function (err, lcList) {
+        if (err) {
+            console.error(TAG, 'Retrieve all LCs failed:', err);
+            return res.render('lcList', {lcApplications : {}});
+        } else {
+        	console.log('obtained lcList:' + lcList);
+        	return res.render('lcList', {lcApplications : JSON.parse(lcList), 
+        			role : req.session.role, date : formatDate(new Date()), username : req.session.username});
+        }
+	})
 }
 
 function getDocument(req, res) {

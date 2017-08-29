@@ -98,7 +98,6 @@ function configure_network(chain, peerURLs, peerEventHosts, caURL, registrarCred
             chain.addPeer(peerURLs[i]);
     }
     
-    chain.eventHubConnect(peerEventHosts[0],{pem:certificate});
 	//setupEvents();
 
     console.log(TAG, 'Debug: Membership service:', chain.getMemberServices());

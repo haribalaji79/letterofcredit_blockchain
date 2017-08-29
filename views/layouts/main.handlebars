@@ -6,9 +6,12 @@
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
 <!-- Latest compiled and minified JavaScript -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+<script src="/js/vendor/jquery.ui.widget.js"></script>
+<script src="/js/vendor/jquery.iframe-transport.js"></script>
+<script src="/js/vendor/jquery.fileupload.js"></script>
+<script src="/js/vendor/jquery.colorbox.js"></script>
 <script>
 	var connected = false;
 	var ws = {};
@@ -101,7 +104,17 @@
 			</span>
 		</div>
 	</div>
-  {{{body}}}
+		<div style="background-color: #66C6ED;" class="col-md-12">
+			<ul class="nav">
+				<li><a href="/lcList"
+					class="accordion-toggle"><span
+						class="sidebar-title">List</span></a></li>
+				<li class="mp20"><a href="/importerBank"
+					class="accordion-toggle"><span
+						class="sidebar-title">Create</span></a></li>
+			</ul>
+		</div>
+		{{{body}}}
 </div>
 {{{_sections.jquery}}}
 </body>

@@ -158,10 +158,6 @@
 	</div>
 </section>
 {{#section 'jquery'}}
-<script src="/js/vendor/jquery.ui.widget.js"></script>
-<script src="/js/vendor/jquery.iframe-transport.js"></script>
-<script src="/js/vendor/jquery.fileupload.js"></script>
-<script src="/js/vendor/jquery.colorbox.js"></script>
 <script>        
 	$(document).ready(function() {            
 		$("form[name='lcForm']").on('submit', function(evt) 
@@ -197,7 +193,7 @@
 				});
 			}
 		});
-		$("#loadFile").on("click", function() {
+		$("#loadLC").on("click", function() {
     		 $.colorbox({href:"/getDocument?file=billoflading.png"});
   		});
 	});    

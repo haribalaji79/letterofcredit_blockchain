@@ -52,7 +52,7 @@ type LC struct {
 	FreightCompany			string	  `json:"freightCompany"`
 	PortOfLoading			string	  `json:"portOfLoading"`
 	PortOfEntry				string	  `json:"portOfEntry"`
-	currentStatus			string	  `json:"currentStatus"`	
+	CurrentStatus			string	  `json:"currentStatus"`	
 	DocumentNames			[]string  `json:"documentNames"`
 	ExporterBankApproved	bool	  `json:"exporterBankApproved"`
 	ExporterDocsUploaded	bool	  `json:"exporterDocsUploaded"`
@@ -81,12 +81,39 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 	t.createUser(stub, []string{"exporterBank", "exporterBank", "Exporter Bank"})
 	t.createUser(stub, []string{"exporter", "exporter", "Exporter"})
 	
-	fmt.Println("Initializing LC keys collection")
-	var blank []string
-	blankBytes, _ := json.Marshal(&blank)
-	err := stub.PutState("LCKeys", blankBytes)
-	if err != nil {
-		fmt.Println("Failed to initialize LC key collection")
+	fmt.Println("Initializing LC keys collection if not present")
+	valAsbytes, err := stub.GetState("LCKeys")
+	if err == nil {
+		var keys []string
+		err = json.Unmarshal(valAsbytes, &keys)
+		fmt.Println("Existing LC : %v", keys);
+		if len(keys) == 0 {
+			keysBytesToWrite, err := json.Marshal(&keys)
+			err = stub.PutState("LCKeys", keysBytesToWrite)
+			if err != nil {
+				fmt.Println("Failed to initialize LC key collection")
+			}
+		} else {
+			for _, key := range keys {
+				valAsbytes, err := stub.GetState(key)
+				if err == nil {
+					var lc LC
+					err = json.Unmarshal(valAsbytes, &lc)
+					if err == nil {
+						if lc.CurrentStatus == "" {
+							lc.CurrentStatus = "Created"
+							keysBytesToWrite, err := json.Marshal(&lc)
+							if err == nil {
+								err = stub.PutState(key, keysBytesToWrite)
+								if err != nil {
+									fmt.Println("Error writing LC to chain" + err.Error())
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	fmt.Println("Initialization complete")
@@ -103,6 +130,21 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return t.Login(stub, args)
     } else if function == "fileView" {
 		return t.fileView(stub, args)	
+    } else if function == "getAllLCs" {
+		fmt.Println("Getting all LCs")
+		allLCs, err := getAllLCs(stub)
+		if err != nil {
+			fmt.Println("Error from getAllLCs")
+			return nil, err
+		} else {
+			allLCsBytes, err1 := json.Marshal(&allLCs)
+			if err1 != nil {
+				fmt.Println("Error marshalling allLCs")
+				return nil, err1
+			}
+			fmt.Println("All success, returning allLCs")
+			return allLCsBytes, nil
+		}
     }
     fmt.Println("query did not find func: " + function)
 
@@ -154,7 +196,7 @@ func (t *SimpleChaincode) createLC(stub shim.ChaincodeStubInterface, args []stri
 		return nil, errors.New("Invalid LC string")
 	}
 	
-	lc.currentStatus = "Created"
+	lc.CurrentStatus = "Created"
 	lc.ExporterBankApproved = false
 	lc.ExporterDocsUploaded = false
 	lc.CustomsApproved = false
@@ -175,7 +217,7 @@ func (t *SimpleChaincode) createLC(stub shim.ChaincodeStubInterface, args []stri
 		return nil, errors.New("Error creating LC")
 	}
 
-	fmt.Println("Marshalling account bytes to write")
+	fmt.Println("Marshalling LC bytes to write")
 
 	// Update the LC keys by adding the new key
 	fmt.Println("Getting LC Keys")
@@ -215,10 +257,12 @@ func (t *SimpleChaincode) createLC(stub shim.ChaincodeStubInterface, args []stri
 
 	fmt.Println("LC Creation success", lc);
 	
-	tosend := "LC created successfully for shipmentId :" + shipmentId + "." + stub.GetTxID();
-    err = stub.SetEvent("invokeEvt", []byte(tosend))
+	var tosend = "LC created successfully for shipmentId :" + shipmentId + "." + stub.GetTxID();
+    err = stub.SetEvent("invokeEvt", []byte(tosend))		
     if err != nil {
         return nil, err
+    } else {
+    	fmt.Println("Error nill event sent");
     }
 	
 	return nil, nil
@@ -247,7 +291,6 @@ func (t *SimpleChaincode) createUser(stub shim.ChaincodeStubInterface, args []st
 	fmt.Println("Attempting to get state of any existing account for " + user.Username)
 	existingBytes, err := stub.GetState(user.Username)
 	if err == nil {
-
 		var existingUser User
 		err = json.Unmarshal(existingBytes, &existingUser)
 		if err != nil {
@@ -331,10 +374,44 @@ func (t *SimpleChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args 
 	return nil, nil
 }
 
+func getAllLCs(stub shim.ChaincodeStubInterface) ([]LC, error) {
+
+	var allLCs []LC
+
+	// Get list of all the keys
+	keysBytes, err := stub.GetState("LCKeys")
+	if err != nil {
+		fmt.Println("Error retrieving LC keys")
+		return nil, errors.New("Error retrieving LC keys")
+	}
+	var keys []string
+	err = json.Unmarshal(keysBytes, &keys)
+	if err != nil {
+		fmt.Println("Error unmarshalling LC keys" + err.Error())
+		return nil, errors.New("Error unmarshalling LC keys")
+	}
+
+	// Get all the cps
+	for _, value := range keys {
+		lcBytes, err := stub.GetState(value)
+
+		var lc LC
+		err = json.Unmarshal(lcBytes, &lc)
+		if err != nil {
+			fmt.Println("Error retrieving lc " + value)
+			return nil, errors.New("Error retrieving lc " + value)
+		}
+
+		fmt.Println("Appending LC" + value)
+		allLCs = append(allLCs, lc)
+	}
+
+	return allLCs, nil
+}
+
 func (t *SimpleChaincode) updateStatus(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 	var err error
 	var key, jsonResp string
-	var value bool
 	fmt.Println("running updateStatus")
 
 	if len(args) != 3 {
@@ -355,25 +432,25 @@ func (t *SimpleChaincode) updateStatus(stub shim.ChaincodeStubInterface, args []
 			value, err := strconv.ParseBool(args[2])
 			if err == nil {		
 				existingLC.ExporterBankApproved = value
-				existingLC.currentStatus = "ExporterBankApproved"
+				existingLC.CurrentStatus = "ExporterBankApproved"
 			}
 		} else if args[1] == "ExporterDocsUploaded" {
 			value, err := strconv.ParseBool(args[2])
 			if err == nil {		
 				existingLC.ExporterDocsUploaded = value
-				existingLC.currentStatus = "ExporterDocsUploaded"
+				existingLC.CurrentStatus = "ExporterDocsUploaded"
 			}
 		} else if args[1] == "CustomsApproved" {
 			value, err := strconv.ParseBool(args[2])
 			if err == nil {
 				existingLC.CustomsApproved = value
-				existingLC.currentStatus = "CustomsApproved"
+				existingLC.CurrentStatus = "CustomsApproved"
 			}
 		} else if args[1] == "PaymentComplete" {
 			value, err := strconv.ParseBool(args[2])
 			if err == nil {
 				existingLC.PaymentComplete = value
-				existingLC.currentStatus = "PaymentComplete"
+				existingLC.CurrentStatus = "PaymentComplete"
 			}
 		}
 	} else {
@@ -386,7 +463,7 @@ func (t *SimpleChaincode) updateStatus(stub shim.ChaincodeStubInterface, args []
 		return nil, errors.New("Error marshalling LC")
 	}
 	
-	err = stub.PutState(lc.ShipmentId, lcBytes)
+	err = stub.PutState(existingLC.ShipmentId, lcBytes)
 	if err != nil {
 		fmt.Println("Error updating LC")
 		return nil, errors.New("Error updating LC")
