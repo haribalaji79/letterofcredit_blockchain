@@ -3,6 +3,7 @@
 **/.vscode
 **/temp
 **/public/logs/**
+**/public/uploads/**
 .project
 cc_summaries/*.json
 

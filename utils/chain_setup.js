@@ -135,7 +135,7 @@ function configure_network(chain, peerURLs, peerEventHosts, caURL, registrarCred
  * @param cb A callback of the form: function(error, chaincodeID)
  */
 function deploy(enrolledUser, chaincode_path, cert_path, cb) {
-    console.log(TAG, 'Deploying commercial paper chaincode as:', enrolledUser.name);
+    console.log(TAG, 'Deploying LOC chaincode as:', enrolledUser.name);
 
     // Fix for the SDK.  Need to make sure a `/tmp` directory exists to tarball chaincode
     try {

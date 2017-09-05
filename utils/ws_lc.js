@@ -58,6 +58,7 @@ module.exports.process_msg = function (socket, data) {
                     }
                     else {
                         console.log(TAG, 'LC created.  No response will be sent. result:', result);
+                        sendMsg({type:'createLC', 'result' : result});
                     }
 
                     cb();
@@ -69,115 +70,31 @@ module.exports.process_msg = function (socket, data) {
                     console.log(TAG, 'Queued createLC job complete');
             });
         }
+    } else if (data.type = 'updateStatus') {
+    	if (data.req) {
+    		chaincodeHelper.queue.push(function (cb) {
+                chaincodeHelper.updateStatus('WebAppAdmin', data.req.shipmentId, data.req.status, 
+                		data.req.value, function (err, result) {
+                    if (err != null) {
+                        console.error(TAG, 'Error in updateStatus. No response will be sent. error:', err);
+                    }
+                    else {
+                        console.log(TAG, 'updateStatus success.  No response will be sent. result:', result);
+                        sendMsg({type:'updateStatus', 'result' : result, 'statusFlag' : data.req.value, 
+                        	'state' : data.req.status});
+                    }
+
+                    cb();
+                });
+            }, function (err) {
+                if (err)
+                    console.error(TAG, 'Queued createLC error:', err.message);
+                else
+                    console.log(TAG, 'Queued createLC job complete');
+            });
+    	}
     }
-    /*else if (data.type == 'get_papers') {
-
-        console.log(TAG, 'getting papers');
-        chaincodeHelper.queue.push(function (cb) {
-            chaincodeHelper.getPapers(data.user, function (err, papers) {
-                if (err != null) {
-                    console.error(TAG, 'Error in get_papers. No response will be sent. error:', err);
-                }
-                else {
-                    console.log(TAG, 'got papers:', papers);
-                    sendMsg({msg: 'papers', papers: papers});
-                }
-
-                cb();
-            });
-        }, function (err) {
-            if (err)
-                console.error(TAG, 'Queued get_papers error:', err.message);
-            else
-                console.log(TAG, 'Queued get_papers job complete');
-        });
-    }
-    else if (data.type == 'transfer_paper') {
-
-        console.log(TAG, 'transferring paper:', data.transfer);
-        chaincodeHelper.queue.push(function (cb) {
-            chaincodeHelper.transferPaper(data.user, data.transfer, function (err, result) {
-                if (err != null) {
-                    console.error(TAG, 'Error in transfer_paper. No response will be sent. error:', err);
-                }
-                else {
-                    console.log(TAG, 'transferred paper. No response will be sent result:', result);
-                }
-
-                cb();
-            });
-        }, function (err) {
-            if (err)
-                console.error(TAG, 'Queued transfer_paper error:', err.message);
-            else
-                console.log(TAG, 'Queued transfer_paper job complete');
-        });
-    }
-    else if (data.type == 'get_company') {
-
-        console.log(TAG, 'getting company information');
-        chaincodeHelper.queue.push(function (cb) {
-            chaincodeHelper.getCompany(data.user, data.company, function (e, company) {
-                if (e != null) {
-                    console.error(TAG, 'Error in get_company. No response will be sent. error:', e);
-                }
-                else {
-                    console.log(TAG, 'get_company result:', company);
-                    sendMsg({msg: 'company', company: company});
-                }
-
-                // Just let the queue library know that the task is finished.
-                cb();
-            });
-        }, function (err) {
-            if (err)
-                console.error(TAG, 'Queued get_company error:', err.message);
-            else
-                console.log(TAG, 'Queued get_company job complete');
-        });
-
-    }
-    else if (data.type == 'chainstats') {
-        var options = {
-            host: peers[0].api_host,
-            port: peers[0].api_port,
-            path: '/chain',
-            method: 'GET'
-        };
-
-        console.log(TAG, 'Requesting chain stats from:', options.host + ':' + options.port);
-        var request = requestLib.request(options, function (resp) {
-            var str = '', chunks = 0;
-
-            resp.setEncoding('utf8');
-            resp.on('data', function (chunk) {															//merge chunks of request
-                str += chunk;
-                chunks++;
-            });
-            resp.on('end', function () {																	//wait for end before decision
-                if (resp.statusCode == 204 || resp.statusCode >= 200 && resp.statusCode <= 399) {
-                    str = JSON.parse(str);
-                    console.log(TAG, 'Chainstats API returned:', str);
-                    cb_chainstats(null, str);
-                }
-                else {
-                    console.error(TAG, 'status code: ' + resp.statusCode, ', headers:', resp.headers, ', message:', str);
-                }
-            });
-        });
-
-        request.on('error', function (e) {																//handle error event
-            console.error(TAG, 'status code: ', 500, ', message:', e);
-        });
-
-        request.setTimeout(20000);
-        request.on('timeout', function () {																//handle time out event
-            console.error(TAG, 'status code: ', 408, ', message: Request timed out');
-        });
-
-        request.end();
-    }*/
-
+    
     //call back for getting the blockchain stats, lets get the block height now
     var chain_stats = {};
 

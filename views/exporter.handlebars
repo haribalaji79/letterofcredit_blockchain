@@ -1,75 +1,74 @@
-
 <section id="exporter-info">
 	<h4 align="center">New Contract</h4>
-	<form class="form-horizontal">
+	<form class="form-horizontal" name="lcForm" action="/createLc">
 		<div class="form-group">
 			<label class="control-label col-sm-3">Shipment Id</label>
 			<div class="col-sm-8">
 				<input class="form-control" type="text" id="shipmentId"
-					name="shipmentId" value="900" readonly>
+					name="shipmentId" value="{{lc.shipmentId}}" {{disabled}}>
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">Content Description</label>
 			<div class="col-sm-8">
 				<textarea class="form-control" type="text" id="contentDesc"
-					name="contentDesc" readonly>80,000 bags of 100KG Nescafe sunrise coffee</textarea>
+					name="contentDesc" {{disabled}}>{{lc.contentDesc}}</textarea>
 			</div>
 		</div>
 		<div class="form-group">
-			<label class="control-label col-sm-3">Content Value</label>
+			<label class="control-label col-sm-3">Content Value (USD)</label>
 			<div class="col-sm-8">
 				<input class="form-control" type="text" id="contentValue"
-					name="contentValue" value="0,000 USD" readonly>
+					name="contentValue" value="{{lc.contentValue}}" {{disabled}}>
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">Exporter Company</label>
 			<div class="col-sm-8">
-				<input class="form-control" type="text" id="importerCompany"
-					name="importerCompany" value="Nescafe Coffees India">
+				<input class="form-control" type="text" id="exporterCompany"
+					name="exporterCompany" value="{{lc.exporterCompany}}" {{disabled}}>
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">Exporter Bank</label>
 			<div class="col-sm-8">
 				<input class="form-control" type="text" id="exporterBank"
-					name="exporterBank" value="State Bank of India" readonly>
+					name="exporterBank" value="{{lc.exporterBank}}" {{disabled}}>
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">Importer Company</label>
 			<div class="col-sm-8">
 				<input class="form-control" type="text" id="importerCompany"
-					name="importerCompany" value="Walmart Inc" readonly>
+					name="importerCompany" value="{{lc.importerCompany}}" {{disabled}}>
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">Importer Bank</label>
 			<div class="col-sm-8">
 				<input class="form-control" type="text" id="importerBank"
-					name="importerBank" value="WellsFargo Bank" readonly>
+					name="importerBank" value="{{lc.importerBank}}" {{disabled}}>
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">Freight Company</label>
 			<div class="col-sm-8">
 				<input class="form-control" type="text" id="freightCompany"
-					name="freightCompany" value="Maersk" readonly>
+					name="freightCompany" value="{{lc.freightCompany}}" {{disabled}}>
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">Port Of Loading</label>
 			<div class="col-sm-8">
 				<input class="form-control" type="text" id="portOfLoading"
-					name="portOfLoading" value="Chennai" readonly>
+					name="portOfLoading" value="{{lc.portOfLoading}}" {{disabled}}>
 			</div>
 		</div>
 		<div class="form-group">
 			<label class="control-label col-sm-3">Port Of Entry</label>
 			<div class="col-sm-8">
 				<input class="form-control" type="text" id="portOfEntry"
-					name="portOfEntry" value="Port of NewYork" readonly>
+					name="portOfEntry" value="{{lc.portOfEntry}}" {{disabled}}>
 			</div>
 		</div>
 	</form>
@@ -87,60 +86,162 @@
 			</thead>
 			<tbody>
 				<tr>
-					<td>Bill Of Lading</td>
-					<td>Browse <input type="file">
+					<td>Letter of Credit</td>
+					<td>Upload
+						<input type="file" required accept="image/*" id="letterOfCredit" data-url="/fileUpload" name="loc" disabled>
+						{{#if lcFileName}}
+							<div id="fileUploadsLC">        
+								<div class="upload"><span class="glyphicon glyphicon-ok"></span>&nbsp;{{lcFileName}}</div>
+							</div>
+						{{else}}        
+							<div id="fileUploadsLC"></div>
+						{{/if}}
 					</td>
-					<td><button type="button" class="btn btn-warning">View</button></td>
+					<td><button type="button" class="btn btn-warning" id="loadLC">View</button></td>
+				</tr>
+				<tr>
+					<td>Bill of Lading</td>
+					<td>Upload
+						<input type="file" required accept="image/*" id="billOfLading" data-url="/fileUpload" name="bol">
+						{{#if blFileName}}
+							<div id="fileUploadsBL">        
+								<div class="upload"><span class="glyphicon glyphicon-ok"></span>&nbsp;{{blFileName}}</div>
+							</div>
+						{{else}}        
+							<div id="fileUploadsBL"></div>
+						{{/if}}
+					</td>
+					<td><button type="button" class="btn btn-warning" id="loadBL">View</button></td>
 				</tr>
 				<tr>
 					<td>Insurance</td>
-					<td>Browse <input type="file">
+					<td>Upload
+						<input type="file" required accept="image/*" id="insurance" data-url="/fileUpload" name="ins">
+						{{#if insFileName}}
+							<div id="fileUploadsIns">        
+								<div class="upload"><span class="glyphicon glyphicon-ok"></span>&nbsp;{{insFileName}}</div>
+							</div>
+						{{else}}        
+							<div id="fileUploadsIns"></div>
+						{{/if}}
 					</td>
-					<td><button type="button" class="btn btn-warning">View</button></td>
+					<td><button type="button" class="btn btn-warning" id="loadIns">View</button></td>
 				</tr>
 			</tbody>
 		</table>
 	</form>
-	<div
-		style="display: table-cell; vertical-align: bottom; padding-left: 20px">
-		<div
-			style="width: 90px; height: 90px; background-color: #00e673; border: 1px solid; display: table;">
-			<div
-				style="vertical-align: middle; display: table-cell; text-align: center; font-weight: bold">Letter
-				of Credit Approved</div>
+	<div id="statusPanel" style="display:table">
+		<div id="descriptionRow" style="display:table-row">
+			<div style="display: table-cell; font-weight:bold; font-size:1.1em" class="center">Letter of Credit Approved</div>
+			<div style="display: table-cell;" class="center">
+				<i class="fa fa-arrow-right"></i>
+			</div>
+			<div style="display: table-cell; font-weight:bold; font-size:1.1em" class="center">Exporter Documents	Uploaded</div>
+			<div style="display: table-cell;" class="center">
+				<i class="fa fa-arrow-right"></i>
+			</div>
+			<div style="display: table-cell;  font-weight:bold; font-size:1.1em" class="center">Customs Approved</div>
+			<div style="display: table-cell;" class="center">
+				<i class="fa fa-arrow-right"></i>
+			</div>
+			<div style="display: table-cell;  font-weight:bold; font-size:1.1em" class="center">Payment Complete</div>
 		</div>
-	</div>
-	<div style="display: table-cell; vertical-align: middle; padding: 10px">
-		<i class="fa fa-arrow-right"></i>
-	</div>
-	<div style="display: table-cell">
-		<div
-			style="width: 90px; height: 90px; background-color: #ff4d4d; border: 1px solid; display: table; vertical-align: top">
-			<div
-				style="vertical-align: middle; display: table-cell; text-align: center; font-weight: bold">Documents
-				Uploaded</div>
-		</div>
-	</div>
-	<div style="display: table-cell; vertical-align: middle; padding: 10px">
-		<i class="fa fa-arrow-right"></i>
-	</div>
-	<div style="display: table-cell">
-		<div
-			style="width: 90px; height: 90px; background-color: #ff4d4d; border: 1px solid; display: table;">
-			<div
-				style="vertical-align: middle; display: table-cell; text-align: center; font-weight: bold">Customs
-				Approved</div>
-		</div>
-	</div>
-	<div style="display: table-cell; vertical-align: middle; padding: 10px">
-		<i class="fa fa-arrow-right"></i>
-	</div>
-	<div style="display: table-cell">
-		<div
-			style="width: 90px; height: 90px; background-color: #ff4d4d; border: 1px solid; display: table;">
-			<div
-				style="vertical-align: middle; display: table-cell; text-align: center; font-weight: bold">Payment
-				Initiated</div>
+		<div id="statusRow" style="display:table-row">
+			<div style="display: table-cell;" class="center">
+				<i id="ebState1" class="fa fa-check fa-2x" style="display:{{st.ebState1}}"></i>
+				<i id="ebState2" class="fa fa-close fa-2x" style="display:{{st.ebState2}}"></i>
+			</div>
+			<div style="display: table-cell"></div>
+			<div style="display: table-cell;" class="center">
+				<i id="eDocState1" class="fa fa-check fa-2x" style="display:{{st.eDocState1}}"></i>
+				<i id="eDocState2" class="fa fa-close fa-2x" style="display:{{st.eDocState2}}"></i>
+			</div>
+			<div style="display: table-cell"></div>
+			<div style="display: table-cell;" class="center">
+				<i id="cusState1" class="fa fa-check fa-2x" style="display:{{st.cusState1}}"></i>
+				<i id="cusState2" class="fa fa-close fa-2x" style="display:{{st.cusState2}}"></i>
+			</div>
+			<div style="display: table-cell"></div>
+			<div style="display: table-cell;" class="center">
+				<i id="payState1" class="fa fa-check fa-2x" style="display:{{st.payState1}}"></i>
+				<i id="payState2" class="fa fa-close fa-2x" style="display:{{st.payState2}}"></i>
+			</div>
 		</div>
 	</div>
 </section>
+{{#section 'jquery'}}
+<script type="text/javascript">
+	
+	function changeProcessFlowState() {
+		var lcUploaded = $('#fileUploadsLC').children().length > 0;
+		var blUploaded = $('#fileUploadsBL').children().length > 0;
+		var insUploaded = $('#fileUploadsIns').children().length > 0;
+		
+		if(lcUploaded && blUploaded) {
+			$("#eDocState1").css("display", "inline");
+			$("#eDocState2").css("display", "none");	
+		}
+	}
+	
+	function updateFileNameInDiv(divId, data) {
+		$.each(data.result.files, function(index, file){
+			$('#' + divId).append($('<div class="upload">' + 
+					'<span class="glyphicon glyphicon-ok"></span>' +
+					'&nbsp;' + file.originalName + '</div>'));
+			changeProcessFlowState();
+		});
+	}
+	
+	
+	$(document).ready(function() {
+		
+		$('#billOfLading').fileupload({
+			dataType: 'json',
+			autoUpload : false,
+			add: function (e, data) {
+		        console.log('add');
+		        data.submit();
+		    },
+		    progress: function (e, data) {
+		        console.log('progress');
+		    },
+		    start: function (e) {
+		        console.log('start');
+		    },
+		    done: function(e, data) {
+				updateFileNameInDiv('fileUploadsBL', data);
+			}
+		});
+		
+		$('#insurance').fileupload({
+			dataType: 'json',
+			autoUpload : false,
+			add: function (e, data) {
+		        console.log('add');
+		        data.submit();
+		    },
+		    progress: function (e, data) {
+		        console.log('progress');
+		    },
+		    start: function (e) {
+		        console.log('start');
+		    },
+		    done: function(e, data) {
+				updateFileNameInDiv('fileUploadsIns', data);
+			}
+		});
+		
+            
+        $("#loadLC").on("click", function() {
+    		 $.colorbox({href:"/getDocument?file=letterofcredit.jpg"});
+         });
+       	$("#loadBL").on("click", function() {
+       		 	$.colorbox({href:"/getDocument?file=billoflading.png"});
+       	});
+       	$("#loadIns").on("click", function() {
+       		 	$.colorbox({href:"/getDocument?file=insurance.jpg"});
+       	});
+	});
+	
+</script>
+{{/section}}

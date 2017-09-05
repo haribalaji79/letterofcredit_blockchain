@@ -356,7 +356,11 @@ func (t *SimpleChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args 
 	var existingLC LC
 	err = json.Unmarshal(valAsbytes, &existingLC)
 	if err == nil {
-		existingLC.DocumentNames = append(existingLC.DocumentNames, args[2]);
+		existingLC.DocumentNames = append(existingLC.DocumentNames, args[1]);
+	}
+	if len(existingLC.DocumentNames) >= 2 {
+		names := []string{args[0], "ExporterDocsUploaded", "true"}
+		t.updateStatus(stub, names)
 	}
 	lcBytes, err := json.Marshal(&existingLC)
 	if err != nil {
@@ -430,9 +434,14 @@ func (t *SimpleChaincode) updateStatus(stub shim.ChaincodeStubInterface, args []
 	if err == nil {
 		if args[1] == "ExporterBankApproved" {
 			value, err := strconv.ParseBool(args[2])
-			if err == nil {		
-				existingLC.ExporterBankApproved = value
-				existingLC.CurrentStatus = "ExporterBankApproved"
+			if err == nil {
+				if value == true {
+					existingLC.ExporterBankApproved = value
+					existingLC.CurrentStatus = "ExporterBankApproved"
+				} else {
+					existingLC.ExporterBankApproved = value
+					existingLC.CurrentStatus = "ExporterBankRejected"
+				}
 			}
 		} else if args[1] == "ExporterDocsUploaded" {
 			value, err := strconv.ParseBool(args[2])
@@ -443,8 +452,13 @@ func (t *SimpleChaincode) updateStatus(stub shim.ChaincodeStubInterface, args []
 		} else if args[1] == "CustomsApproved" {
 			value, err := strconv.ParseBool(args[2])
 			if err == nil {
-				existingLC.CustomsApproved = value
-				existingLC.CurrentStatus = "CustomsApproved"
+				if value == true {
+					existingLC.CustomsApproved = value
+					existingLC.CurrentStatus = "CustomsApproved"
+				} else {
+					existingLC.CustomsApproved = value
+					existingLC.CurrentStatus = "CustomsRejected"
+				}
 			}
 		} else if args[1] == "PaymentComplete" {
 			value, err := strconv.ParseBool(args[2])
@@ -508,6 +522,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	} else if function == "uploadDocument" {
 		fmt.Println("running uploadDocument>>>>>>>>>")
 		return t.uploadDocument(stub, args)	
+	} else if function == "updateStatus" {
+		return t.updateStatus(stub, args)	
 	}
 	fmt.Println("invoke did not find func: " + function)					//error
 

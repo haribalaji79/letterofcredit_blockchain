@@ -27,6 +27,7 @@ var https = require('https');
 var setup = require('./setup');
 var cors = require('cors');
 var fs = require('fs');
+var jqupload = require('jquery-file-upload-middleware');
 var handlebars = require('express3-handlebars').create({ defaultLayout:'main',
 	helpers: {        
 		section: function(name, options) {
@@ -35,6 +36,16 @@ var handlebars = require('express3-handlebars').create({ defaultLayout:'main',
 				return null;        
 			}    
 	}});
+var chaincode_ops = require('./utils/chaincode_ops');
+var cpChaincode;
+
+//Utility functions
+function base64_encode(file) {
+    // read binary data
+    var bitmap = fs.readFileSync(file);
+    // convert binary data to base64 encoded string
+    return new Buffer(bitmap).toString('base64');
+}
 
 // =====================================================================================================================
 // 												Express Setup
@@ -83,6 +94,45 @@ app.use(function (req, res, next) {
 // This router will serve up our pages and API calls.
 var router = require('./routes/site_router');
 app.use('/', router);
+
+//configure file upload
+app.use('/fileUpload', function(req,res,next) {
+	var now = Date.now();
+	req.now = now;
+	jqupload.fileHandler({
+		uploadDir: function(){
+			return './public/uploads/' + now;
+		},        
+		uploadUrl: function(){
+			return '/uploads/' + now;
+		},
+	})(req, res, next);
+	jqupload.on('begin', function(fileInfo, req, res) {
+		console.log("beginning upload:" + fileInfo.name +"::"+fileInfo.url);
+	});
+	jqupload.on('end', function(fileInfo, req, res) {
+	 console.log("end upload:" + fileInfo.name +"::"+fileInfo.url);
+		var base64Str = base64_encode('./public/uploads/' + req.now + "/" + fileInfo.name);
+		cpChaincode.uploadDocument('WebAppAdmin', req.session.shipmentId, fileInfo.name,  
+				base64Str, function (err, user) {
+	        if (err) {
+	            console.error(TAG, 'Upload failed:', err);
+	            return res.redirect('/fileUpload');
+	        } else {
+	        	console.log('Uploaded Document:' + fileInfo.name + "::"+ req.now);
+	        }
+		})		
+	});
+	jqupload.on('abort', function (fileInfo, req, res) {
+		console.log('Abort Document upload:' + fileInfo.name+"::"+ req.now);
+	});
+	jqupload.on('delete', function (fileInfo, req, res) {
+		console.log('Delete Document:' + fileInfo.name+"::"+ req.now);
+	});
+	jqupload.on('error', function (e, req, res) {
+      console.log("Error jqupload :" + e.message);
+  });
+});
 
 // If the request is not process by this point, their are 2 possibilities:
 // 1. We don't have a route for handling the request
@@ -227,7 +277,6 @@ console.log(TAG, 'configuring the chain object and its dependencies');
 
 // Things that require the network to be set up
 var user_manager = require('./utils/users');
-var chaincode_ops = require('./utils/chaincode_ops');
 var wslc = require('./utils/ws_lc');
 
 // Keep the keyValStore in the project directory
@@ -262,7 +311,7 @@ chain_setup.setupChain(keyValStoreDir, users, peerURLs, peerEventHosts, caURL, c
         user_manager = user_manager(chain, useTLS);
 
         // Operation involving chaincode in this app should use this object.
-        var cpChaincode = new chaincode_ops.CPChaincode(chain, chaincodeID);
+        cpChaincode = new chaincode_ops.CPChaincode(chain, chaincodeID);
 
         wslc.setup(peers, cpChaincode, useTLS);
         router.setup_helpers(cpChaincode, user_manager);

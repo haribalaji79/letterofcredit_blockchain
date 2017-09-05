@@ -5,13 +5,20 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/css/loc.css"/>
+<link rel="stylesheet" href="/css/font-awesome.min.css"/>
+<link rel="stylesheet" href="/css/colorbox.css">
+<link rel="stylesheet" href="css/jquery.fileupload.css">
+<link rel="stylesheet" href="css/jquery.fileupload-ui.css">
 <!-- Latest compiled and minified JavaScript -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="/js/vendor/jquery.ui.widget.js"></script>
 <script src="/js/vendor/jquery.iframe-transport.js"></script>
 <script src="/js/vendor/jquery.fileupload.js"></script>
 <script src="/js/vendor/jquery.colorbox.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
 	var connected = false;
 	var ws = {};
@@ -63,7 +70,20 @@
 			}	
 			else if (data.type === 'error') {
 				console.log("Error:", data.error);
-			}
+			} else if(data.type == 'createLC') {
+                console.log("createLC $$:", msg);
+                $('#dialog').html('<p>Contract successfully created!</p><p> Transaction id : ' + data.result.uuid + '</p>');
+                $('#dialog').dialog('open');
+			} else if (data.type == 'updateStatus') {
+				if (data.state == 'PaymentComplete') {
+					$('#dialog').html('<p>Payment complete!</p><p> Transaction id : ' + data.result.uuid + '</p>');
+	                $('#dialog').dialog('open');	
+				} else {
+					$('#dialog').html('<p>LC application status updated!</p><p> Transaction id : ' + data.result.uuid + '</p>');
+	                $('#dialog').dialog('open');	
+				}
+                changeProcessFlowState(data.statusFlag);
+			}	
 		}
 		catch (e) {
 			console.log('ERROR', e);
@@ -85,11 +105,23 @@
 	    div.appendChild(document.createTextNode(str));
 	    return div.innerHTML;
 	}
+	
+	$(document).ready(function() {
+		$("#dialog").dialog({
+	        resizable: false,
+	        autoOpen: false,
+	        height:200,
+	        width:410,
+	        modal: true,
+	        buttons: {
+	          'Ok': function() {
+	            $(this).dialog('close');
+	          }
+	       }
+	   	});	
+	})
 </script>
-<link rel="stylesheet" href="/css/loc.css"/>
-<link rel="stylesheet" href="/css/font-awesome.min.css"/>
-<link rel="stylesheet" href="/css/colorbox.css">
-<title>Customs</title>
+<title>Letter of Credit</title>
 </head>
 <body>
 	<div class="container-fluid">
@@ -104,17 +136,19 @@
 			</span>
 		</div>
 	</div>
-		<div style="background-color: #66C6ED;" class="col-md-12">
-			<ul class="nav">
-				<li><a href="/lcList"
-					class="accordion-toggle"><span
-						class="sidebar-title">List</span></a></li>
-				<li class="mp20"><a href="/importerBank"
-					class="accordion-toggle"><span
-						class="sidebar-title">Create</span></a></li>
-			</ul>
-		</div>
-		{{{body}}}
+	<div style="background-color: #66C6ED;" class="col-md-12">
+		<ul class="nav">
+			<li><a href="/lcList"
+				class="accordion-toggle"><span
+					class="sidebar-title">List</span></a></li>
+			<li class="mp20"><a href="/importerBank"
+				class="accordion-toggle" style="display:{{createVisible}}"><span
+					class="sidebar-title">Create</span></a></li>
+		</ul>
+	</div>
+	<div id="dialog" title="New Contract">
+    </div>
+	{{{body}}}
 </div>
 {{{_sections.jquery}}}
 </body>

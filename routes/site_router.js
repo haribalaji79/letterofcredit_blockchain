@@ -14,7 +14,6 @@
 var express = require('express');
 var router = express.Router();
 var setup = require('../setup.js');
-var jqupload = require('jquery-file-upload-middleware');
 var fs = require('fs');
 // Load our modules.
 var userManager;
@@ -41,6 +40,57 @@ router.get('/:page', function (req, res) {
 	    res.redirect('/login');
 	} else if (req.params.page == 'lcList') {
 		retrieveLCApplications(req, res);
+	} else if (req.params.page == 'importerBank' || req.params.page == 'exporterBank'
+			|| req.params.page == 'exporter' || req.params.page == 'customs') {
+		if (req.query.shipmentId != null) {
+			req.session.shipmentId = req.query.shipmentId;
+			chaincode_ops.fetchLC('WebAppAdmin', req.query.shipmentId, function (err, lc) {
+		        if (err) {
+		            console.error(TAG, 'FetchLC failed:', err);
+		            res.redirect('/lcList');
+		        } else {
+		        	var lcJSON = JSON.parse(lc.toString());  
+		        	console.log("JSON : " + lc.toString());
+		        	var documentNames = lcJSON.documentNames;
+		        	var lcFileName, blFileName, insFileName;
+		        	if (documentNames != null) {
+		        		for (var i = 0; i < documentNames.length; i++) { 
+			        		if (i == 0) {
+			        			lcFileName = documentNames[0];
+			        		} else if (i == 1) {
+			        			blFileName = documentNames[1];
+			        		} else if (i == 2) {
+			        			insFileName = documentNames[2];
+			        		}
+			        	}
+		        	}
+		        	
+		        	var ebState1 = (lcJSON.exporterBankApproved) ? 'inline' : 'none';
+		        	var ebState2 = (!lcJSON.exporterBankApproved) ? 'inline' : 'none';
+		        	var eDocState1 = (lcJSON.exporterDocsUploaded) ? 'inline' : 'none';
+		        	var eDocState2 = (!lcJSON.exporterDocsUploaded) ? 'inline' : 'none';
+		        	var cusState1 = (lcJSON.customsApproved) ? 'inline' : 'none';
+		        	var cusState2 = (!lcJSON.customsApproved) ? 'inline' : 'none';
+		        	var payState1 = (lcJSON.paymentComplete) ? 'inline' : 'none';
+		        	var payState2 = (!lcJSON.paymentComplete) ? 'inline' : 'none'; 
+		        	var state = {'ebState1' : ebState1, 'ebState2' : ebState2, 'eDocState1' : eDocState1, 'eDocState2' : eDocState2,
+		        		'cusState1' : cusState1, 'cusState2' : cusState2, 'payState1': payState1, 'payState2' : payState2};
+		        	var responsePage = req.params.page;
+		        	var showCreate = (responsePage == 'importerBank') ? 'inline-block' : 'none';
+		        	if (responsePage == 'importerBank') {
+		        		if (lcJSON.customsApproved) {
+		        			responsePage = 'importerBankPayment';
+		        		}
+		        	}
+		        	var showCreate = 
+		        	res.render(responsePage, {'lc' : lcJSON, disabled : 'disabled', 
+		        		'lcFileName' : lcFileName, 'blFileName' : blFileName, 'insFileName' : insFileName,
+		        		 role : req.session.role, date : formatDate(new Date()), st : state, createVisible : showCreate});
+		        }
+			})
+		} else {
+			res.render(req.params.page, {role : req.session.role, date : formatDate(new Date())});
+		}
 	}
 	else {
 		res.render(req.params.page, {role : req.session.role, date : formatDate(new Date())});
@@ -69,13 +119,6 @@ function formatDate(date) {
 	  return daysOfWeek[week] + ', ' + day + ' ' + monthNames[monthIndex] + ' ' + year;
 }
 
-function base64_encode(file) {
-    // read binary data
-    var bitmap = fs.readFileSync(file);
-    // convert binary data to base64 encoded string
-    return new Buffer(bitmap).toString('base64');
-}
-
 // function to create file from base64 encoded string
 function base64_decode(base64str) {
     // create buffer object from base64 encoded string, it is important to tell the constructor that the string is base64 encoded
@@ -87,53 +130,13 @@ function base64_decode(base64str) {
 /*var base64str = base64_encode('kitten.jpg');
 console.log(base64str);*/
 
-router.post('/:page', function (req, res) {
-	console.log("Inside POST :" + req.params.page);
-    if (req.body.password) {
-        login(req, res);
-    }else if (req.params.page == 'fileUpload') {
-    	var now = Date.now();
-    	jqupload.fileHandler({
-    		uploadDir: function(){
-    			return './public/uploads/' + now;
-    		},        
-    		uploadUrl: function(){
-    			return '/uploads/' + now;
-    		},
-    	})(req, res);
-    	jqupload.on('begin', function(fileInfo, req, res) {
-    		console.log("beginning upload:" + fileInfo.name +"::"+fileInfo.url);
-    		//fileUpload(fileInfo, req, res);
-    		//fileContent = base64_encode(fileInfo);
-    		//console.log("<<<<<<<<>>>>>>>>>:" + fileContent);
-    	});
-    	jqupload.on('end', function(fileInfo, req, res) {
-    	 console.log("beginning upload:" + fileInfo.name +"::"+fileInfo.url);
-    		var base64Str = base64_encode('./public/uploads/' + now + "/" + fileInfo.name);
-    		chaincode_ops.uploadDocument('WebAppAdmin', req.session.shipmentId, fileInfo.name, 
-    				base64Str, function (err, user) {
-    	        if (err) {
-    	            console.error(TAG, 'Upload failed:', err);
-    	            return res.redirect('/fileUpload');
-    	        } else {
-    	        	console.log('Uploaded Document:' + fileInfo.name + "::"+ now);
-    	        }
-    		})
-    	});
-    	jqupload.on('delete', function (fileInfo, req, res) {
-    		console.log('Delete Document:' + fileInfo.name+"::"+ now);
-    	});
-    	jqupload.on('error', function (e, req, res) {
-            console.log("Error jqupload :" + e.message);
-        });
-    }  else {
-    	register(req, res);
-    }
+router.post('/processLogin', function (req, res) {
+    login(req, res);
 });
 
 module.exports = router;
 
-module.exports.setup_helpers = function(configured_chaincode_ops, user_manager) {
+module.exports.setup_helpers = function(configured_chaincode_ops, user_manager) { 
     if(!configured_chaincode_ops)
         throw new Error('Router needs a chaincode helper in order to function');
     chaincode_ops = configured_chaincode_ops;
@@ -204,11 +207,7 @@ function login(req, res) {
         	var userJSON = JSON.parse(user.toString());
         	req.session.role = userJSON.role;
         	req.session.username = userJSON.userName;
-        	req.session.shipmentId = '900';
         	retrieveLCApplications(req, res);
-            //req.session.username = req.body.username;
-            //req.session.name = req.body.username;
-            //req.session.error_msg = null;
         }
     });
 }
